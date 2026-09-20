@@ -12,6 +12,7 @@
   let traffic = fallback; let paths=[]; let raf=0; let start=performance.now();
   const corridorLayer = window.trafficMap && L.layerGroup().addTo(window.trafficMap);
   const corridorLines = [];
+  const signalMarkers = [];
   const corridors = [
     {id:'c1',name:'Ring Road Southern Arc',density:85,path:[[28.5918,77.1616],[28.5835,77.17],[28.5685,77.206],[28.5672,77.21],[28.5695,77.2435],[28.571,77.258]]},
     {id:'c2',name:'Outer Ring Road North Arc',density:78,path:[[28.7369,77.161],[28.7065,77.181],[28.685,77.21],[28.6665,77.23]]},
@@ -27,6 +28,10 @@
   const corridorColor = density => density >= 80 ? '#d94b57' : density >= 60 ? '#d28d18' : '#20a56b';
   corridors.forEach(c => { if (!corridorLayer) return; const line=L.polyline(c.path,{color:corridorColor(c.density),weight:5,opacity:.82}); line.bindTooltip(`${c.name} · ${c.density}% load`,{sticky:true}); line.addTo(corridorLayer); corridorLines.push({line,data:c}); });
   const refreshCorridors = () => { const loads=traffic.map(item=>Number(item.vehicles)||0); const average=loads.length ? loads.reduce((sum,value)=>sum+value,0)/loads.length : 120; corridorLines.forEach(({line,data},index)=>{ const locationLoad=loads[index%Math.max(1,loads.length)] || average; const density=Math.max(20,Math.min(95,Math.round(data.density*(locationLoad/120)))); line.setStyle({color:corridorColor(density),weight:density>=75?6:5,opacity:.84}); line.setTooltipContent(`${data.name} · ${density}% live load`); }); };
+  const signalPoints = [[28.6328,77.2197],[28.5918,77.1616],[28.7369,77.161],[28.6129,77.2295],[28.5697,77.326],[28.495,77.089]];
+  const signalNames = ['Connaught Place','Dhaula Kuan','Mukarba Chowk','India Gate','Noida Sector 18','Cyber Hub'];
+  if (window.trafficMap) signalPoints.forEach((point,index) => { const marker=L.marker(point,{icon:L.divIcon({className:'traffic-light-marker',html:`<span class="traffic-light-body"><i></i><i></i><i></i></span><b>${signalNames[index]}</b>`,iconSize:[112,42],iconAnchor:[10,21]})}).addTo(window.trafficMap); signalMarkers.push(marker); });
+  const refreshSignals = () => { signalMarkers.forEach((marker,index) => { const item=traffic[index%Math.max(1,traffic.length)]||fallback[0]; const state=item.level==='SEVERE'||item.level==='HIGH'?'red':item.level==='MODERATE'?'amber':'green'; marker.getElement()?.setAttribute('data-state',state); }); };
   const levelClass = (item) => item.level.toLowerCase();
   const drawNetwork = () => {
     overlay.replaceChildren(); paths=[];
@@ -40,7 +45,7 @@
   };
   const animate=now=>{const t=(now-start)/1000;const roadPaths=overlay.querySelectorAll('path');overlay.querySelectorAll('.traffic-vehicle,.traffic-ambulance').forEach((dot,index)=>{const p=paths[index%paths.length];const len=roadPaths[index%Math.max(1,roadPaths.length)];if(!len||!p)return;const total=len.getTotalLength();if(!Number.isFinite(total)||total<=0)return;const distance=(t*(dot.classList.contains('traffic-ambulance')?34:(p.level==='SEVERE'?18:p.level==='HIGH'?28:42))+index*75)%total;const point=len.getPointAtLength(Number.isFinite(distance)?distance:0);dot.setAttribute('cx',point.x);dot.setAttribute('cy',point.y);});raf=requestAnimationFrame(animate);};
   const addVehicles=()=>{overlay.querySelectorAll('.traffic-vehicle').forEach(x=>x.remove());for(let i=0;i<Math.min(18,traffic.reduce((n,x)=>n+Math.ceil(x.vehicles/45),0));i++){const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('r',i%7===0?'5':'3');c.classList.add('traffic-vehicle');if(i===0)c.classList.add('emergency');overlay.appendChild(c);}};
-  const render=()=>{drawNetwork();addVehicles();refreshCorridors();if(!raf)raf=requestAnimationFrame(animate);};
+  const render=()=>{drawNetwork();addVehicles();refreshCorridors();refreshSignals();if(!raf)raf=requestAnimationFrame(animate);};
   const fetchTraffic=async()=>{try{const response=await fetch(`${API}/traffic-status?mode=ai`);if(!response.ok)throw Error('traffic unavailable');const data=await response.json();traffic=data.junctions.map(j=>{const vehicles=Object.values(j.densities||{}).reduce((a,b)=>a+Number(b),0);return {...j,vehicles,level:vehicles>=190?'SEVERE':vehicles>=130?'HIGH':vehicles>=90?'MODERATE':'LOW'};});}catch{traffic=fallback;}render();};
   const addMessage=(who,text,typing=false)=>{const el=document.createElement('div');el.className=`assistant-msg${typing?' tarrid-typing':''}`;el.innerHTML=`<b>${who}</b><br>${text}`;messages.appendChild(el);messages.parentElement.scrollTop=messages.parentElement.scrollHeight;return el;};
   const ask=async()=>{const text=input.value.trim();if(!text||send.disabled)return;input.value='';send.disabled=true;addMessage('You',text);const typing=addMessage('Tarrid AI','Live traffic data check kar raha hoon…',true);try{const response=await fetch(`${API}/ai/traffic`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})});if(!response.ok)throw Error('assistant unavailable');const data=await response.json();typing.remove();addMessage('Tarrid AI',data.response);}catch{typing.remove();addMessage('Tarrid AI','Live traffic service temporarily unavailable. Demo traffic data map par visible hai.');}finally{send.disabled=false;}};
