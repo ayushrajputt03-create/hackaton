@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from flask import Flask, jsonify, request
 
@@ -80,6 +81,33 @@ def toggle_mode():
 def savings():
     vehicles = sum(sum(j[key] for key in ("North", "South", "East", "West")) for j in junction_list())
     return jsonify(calculate_savings(vehicles, 142 if ai_mode["enabled"] else 0))
+
+
+@app.post("/api/ai/traffic")
+def ai_traffic():
+    """Rule-based Tarrid assistant using the same live traffic dataset as the map."""
+    payload = request.get_json(silent=True) or {}
+    message = str(payload.get("message", "")).strip()
+    if not message:
+        return jsonify({"error": "message is required"}), 400
+    records = []
+    for junction in junction_list():
+        counts = {key: int(junction[key]) for key in ("North", "South", "East", "West")}
+        vehicles = sum(counts.values())
+        level = "SEVERE" if vehicles >= 190 else "HIGH" if vehicles >= 130 else "MODERATE" if vehicles >= 90 else "LOW"
+        records.append({"name": junction["name"], "vehicles": vehicles, "level": level, "lat": junction["lat"], "lng": junction["lng"]})
+    text = message.lower()
+    severe = [item for item in records if item["level"] in ("SEVERE", "HIGH")]
+    if any(word in text for word in ("fastest", "route", "corridor", "emergency", "jaana")):
+        fastest = min(records, key=lambda item: item["vehicles"])
+        response = f"Live data ke according {fastest['name']} corridor sabse light hai, {fastest['vehicles']} vehicles monitored hain. Emergency corridor decision-support available hai; signal control automatically nahi kiya gaya hai."
+    elif any(word in text for word in ("summary", "summarize", "health", "overall", "kaisa")):
+        response = f"Network mein {len(severe)} junctions par high ya severe traffic hai. Sabse zyada load {max(records, key=lambda item: item['vehicles'])['name']} par hai; baaki locations ka data live monitoring mein hai."
+    elif any(word in text for word in ("jam", "traffic", "congestion", "heavy", "road")):
+        response = "Abhi live data ke according " + ("; ".join(f"{item['name']} par {item['level'].lower()} traffic ({item['vehicles']} vehicles)" for item in severe) if severe else "monitored junctions par traffic low ya moderate hai") + "."
+    else:
+        response = "Main live traffic data dekh sakta hoon. Aap pooch sakte hain: kahan jam hai, network summary, ya fastest corridor."
+    return jsonify({"response": response, "traffic": records, "timestamp": datetime.now(timezone.utc).isoformat()})
 
 
 if __name__ == "__main__":
