@@ -10,6 +10,21 @@
   const legend = document.createElement('div'); legend.className='traffic-map-legend'; legend.innerHTML='<b>TRAFFIC</b><br><i class="green"></i>Normal <i class="yellow"></i>Moderate<br><i class="orange"></i>Heavy <i class="red"></i>Severe';
   mapWrap.append(overlay, legend);
   let traffic = fallback; let paths=[]; let raf=0; let start=performance.now();
+  const corridorLayer = window.trafficMap && L.layerGroup().addTo(window.trafficMap);
+  const corridors = [
+    {id:'c1',name:'Ring Road Southern Arc',density:85,path:[[28.5918,77.1616],[28.5835,77.17],[28.5685,77.206],[28.5672,77.21],[28.5695,77.2435],[28.571,77.258]]},
+    {id:'c2',name:'Outer Ring Road North Arc',density:78,path:[[28.7369,77.161],[28.7065,77.181],[28.685,77.21],[28.6665,77.23]]},
+    {id:'c3',name:'Vikas Marg East Expressway',density:45,path:[[28.628,77.241],[28.63,77.276],[28.641,77.295],[28.6475,77.315]]},
+    {id:'c4',name:'NH-48 Airport Corridor',density:32,path:[[28.549,77.121],[28.542,77.135],[28.5918,77.1616],[28.601,77.171]]},
+    {id:'c5',name:'Central Janpath Line',density:60,path:[[28.6328,77.2197],[28.625,77.2185],[28.6186,77.2163],[28.6255,77.2065]]},
+    {id:'c6',name:'Rohtak Road West Arterial',density:82,path:[[28.6795,77.0935],[28.6675,77.125],[28.662,77.148]]},
+    {id:'c7',name:'GT Road Shahdara Arterial',density:74,path:[[28.6665,77.23],[28.669,77.268],[28.6835,77.309]]},
+    {id:'c8',name:'Mathura Road South Arterial',density:58,path:[[28.571,77.258],[28.5505,77.2625],[28.535,77.275]]},
+    {id:'c9',name:'Outer Ring South Arc',density:38,path:[[28.555,77.175],[28.5455,77.1925],[28.5448,77.2185],[28.5492,77.252]]},
+    {id:'c10',name:'Mehrauli-Gurgaon Road',density:48,path:[[28.525,77.185],[28.5205,77.2105],[28.49,77.1]]}
+  ];
+  const corridorColor = density => density >= 80 ? '#d94b57' : density >= 60 ? '#d28d18' : '#20a56b';
+  corridors.forEach(c => { if (!corridorLayer) return; const line=L.polyline(c.path,{color:corridorColor(c.density),weight:5,opacity:.82}); line.bindTooltip(`${c.name} · ${c.density}% load`,{sticky:true}); line.addTo(corridorLayer); });
   const levelClass = (item) => item.level.toLowerCase();
   const drawNetwork = () => {
     overlay.replaceChildren(); paths=[];
