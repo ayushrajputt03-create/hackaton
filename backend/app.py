@@ -4,7 +4,10 @@ import json
 from pathlib import Path
 from flask import Flask, jsonify, request
 
-from traffic_model import calculate_fixed_time, calculate_green_time, calculate_green_wave, calculate_savings, calculate_wait_time
+try:
+    from .traffic_model import calculate_fixed_time, calculate_green_time, calculate_green_wave, calculate_savings, calculate_wait_time
+except ImportError:
+    from traffic_model import calculate_fixed_time, calculate_green_time, calculate_green_wave, calculate_savings, calculate_wait_time
 
 app = Flask(__name__)
 DATA_PATH = Path(__file__).with_name("mock_data.json")

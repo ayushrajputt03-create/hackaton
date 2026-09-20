@@ -1,5 +1,7 @@
 /* Live comparison module. The landing page remains unchanged; dashboard.html loads this file. */
-const API_BASE = "http://127.0.0.1:5000/api";
+const API_BASE = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost"
+  ? "http://127.0.0.1:5000/api"
+  : "/api";
 let currentMode = "ai";
 
 function modulePanel() {
