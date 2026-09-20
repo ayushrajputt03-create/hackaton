@@ -28,6 +28,18 @@ function modulePanel() {
   };
 }
 
+function renderDemoModule() {
+  const button = document.getElementById("aiMode");
+  const selected = FALLBACK_COMPARE[currentMode];
+  if (button) button.textContent = currentMode === "ai" ? "AI ON" : "FIXED ON";
+  const comparison = document.getElementById("comparison");
+  if (comparison) comparison.textContent = `${currentMode === "ai" ? "AI" : "Fixed"} wait ${selected.wait_time}s · AI ${FALLBACK_COMPARE.improvement_percent}% faster · demo data`;
+  const savings = document.getElementById("savings");
+  if (savings) savings.textContent = `Fuel ${FALLBACK_SAVINGS.fuel_saved_liters} L · CO2 ${FALLBACK_SAVINGS.co2_saved_kg} kg · demo data`;
+  const wave = document.getElementById("waveState");
+  if (wave) wave.textContent = `Green wave: 3 junctions · offsets 0s -> 32s -> 64s · demo data`;
+}
+
 async function refreshModuleData() {
   try {
     const [comparison, mode, savings, wave, traffic] = await Promise.all([
@@ -48,19 +60,12 @@ async function refreshModuleData() {
     if (chart && chart.data?.datasets?.[0]) { chart.data.datasets[0].data = [comparison.fixed.wait_time, comparison.ai.wait_time]; chart.update(); }
   } catch (error) {
     console.error("Traffic comparison refresh failed", error);
-    const button = document.getElementById("aiMode"); if (button) button.textContent = "Backend offline";
-    const selected = FALLBACK_COMPARE[currentMode];
-    const comparison = document.getElementById("comparison");
-    if (button) button.textContent = currentMode === "ai" ? "AI ON" : "FIXED ON";
-    if (comparison) comparison.textContent = `${currentMode === "ai" ? "AI" : "Fixed"} wait ${selected.wait_time}s · AI ${FALLBACK_COMPARE.improvement_percent}% faster · demo data`;
-    const savings = document.getElementById("savings");
-    if (savings) savings.textContent = `Fuel ${FALLBACK_SAVINGS.fuel_saved_liters} L · CO2 ${FALLBACK_SAVINGS.co2_saved_kg} kg · demo data`;
-    const wave = document.getElementById("waveState");
-    if (wave) wave.textContent = `Green wave: 3 junctions · offsets ${FALLBACK_WAVE.junctions.map((item) => `${item.offset_seconds}s`).join(" -> ")} · demo data`;
+    renderDemoModule();
     document.querySelectorAll(".module-card").forEach((card) => { const tag = card.querySelector(".tag"); if (tag) tag.textContent = `${currentMode.toUpperCase()} · demo mode`; });
   }
 }
 
 modulePanel();
+renderDemoModule();
 refreshModuleData();
-window.setInterval(refreshModuleData, 3000);
+window.setInterval(refreshModuleData, 10000);
