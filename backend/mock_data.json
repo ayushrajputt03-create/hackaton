@@ -1,0 +1,5 @@
+{
+  "junction_1": {"name": "Connaught Place", "lat": 28.6328, "lng": 77.2197, "North": 65, "South": 18, "East": 42, "West": 9},
+  "junction_2": {"name": "India Gate", "lat": 28.6129, "lng": 77.2295, "North": 54, "South": 31, "East": 46, "West": 22},
+  "junction_3": {"name": "Dhaula Kuan", "lat": 28.5918, "lng": 77.1616, "North": 78, "South": 56, "East": 44, "West": 32}
+}

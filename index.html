@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Emergency Flow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <nav class="nav" aria-label="Primary navigation">
+      <a class="brand" href="#top" aria-label="Emergency Flow home">Emergency Flow</a>
+      <div class="nav-links" aria-label="Page sections">
+        <a href="#overview">Overview</a>
+        <a href="#how">How It Works</a>
+        <a href="#live">Live Response</a>
+        <a href="#technology">Technology</a>
+        <a href="#impact">Impact</a>
+      </div>
+      <a class="demo-link" href="#demo">Request Demo</a>
+    </nav>
+
+    <main id="top">
+      <section class="cinema" id="overview" aria-label="Emergency Flow cinematic demonstration">
+        <div class="stage">
+          <canvas id="trafficCanvas" aria-label="Night traffic jam with ambulance response visualization"></canvas>
+          <div class="vignette"></div>
+          <div class="scanline"></div>
+          <div class="ambulance-focus" aria-hidden="true"></div>
+          <div class="route-layer" aria-hidden="true">
+            <svg id="routeSvg" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid slice">
+              <path class="lane-edge edge-left" d="M608 660 C616 595 624 540 634 492 C646 432 653 377 662 326 C671 267 686 218 718 154" />
+              <path class="lane-edge edge-right" d="M652 664 C654 602 661 548 672 500 C687 438 696 382 704 330 C716 266 733 215 762 152" />
+              <path id="routeGlow" d="M630 666 C636 599 644 543 654 494 C668 432 676 377 685 326 C696 264 714 214 740 150" />
+              <path id="routeLine" d="M630 666 C636 599 644 543 654 494 C668 432 676 377 685 326 C696 264 714 214 740 150" />
+              <circle id="ambulanceMarker" cx="630" cy="666" r="8" />
+            </svg>
+          </div>
+          <div class="detection-layer" aria-hidden="true">
+            <span class="box box-a" data-label="EV-01"></span>
+            <span class="box box-b" data-label="LANE GAP"></span>
+            <span class="box box-c" data-label="BLOCKED"></span>
+            <span class="box box-d" data-label="DENSITY"></span>
+          </div>
+          <div class="emergency-pulse" aria-hidden="true"></div>
+          <div class="signal-chip" aria-hidden="true">
+            <span></span>
+            <strong>Red</strong>
+          </div>
+        </div>
+
+        <div class="story story-hero" data-story="0">
+          <p class="eyebrow">Real-time emergency traffic response</p>
+          <h1>When every second matters.</h1>
+          <p>Traffic should never decide how fast emergency care arrives.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#how">See How It Works</a>
+            <a class="button secondary" href="#technology">Explore the Technology</a>
+          </div>
+        </div>
+
+        <div class="story" data-story="1" id="how">
+          <p class="eyebrow">The problem</p>
+          <h2>The clock doesn't stop.</h2>
+          <p>While traffic moves by inches, an emergency vehicle can lose critical time.</p>
+        </div>
+
+        <div class="story" data-story="2">
+          <p class="eyebrow">The ambulance</p>
+          <h2>One vehicle can change everything.</h2>
+          <p>Emergency vehicles need more than a siren. They need a path.</p>
+        </div>
+
+        <div class="story" data-story="3" id="live">
+          <p class="eyebrow">Intelligence activates</p>
+          <h2>See the road before it opens.</h2>
+          <p>Real-time traffic intelligence identifies congestion, analyzes available lanes and calculates a response route.</p>
+        </div>
+
+        <div class="story" data-story="4" id="technology">
+          <p class="eyebrow">Emergency corridor</p>
+          <h2>Create a clear path.</h2>
+          <p>Coordinated traffic movement can turn a blocked road into an emergency corridor.</p>
+        </div>
+
+        <div class="story" data-story="5">
+          <p class="eyebrow">Intersections</p>
+          <h2>Every intersection matters.</h2>
+          <p>Coordinated signals and traffic awareness help keep the emergency route moving.</p>
+        </div>
+
+        <div class="story" data-story="6" id="impact">
+          <p class="eyebrow">Response route</p>
+          <h2>From traffic jam to response route.</h2>
+          <p>Turn fragmented traffic data into coordinated emergency movement.</p>
+        </div>
+
+        <div class="story final" data-story="7" id="demo">
+          <p class="eyebrow">Emergency Flow</p>
+          <h2>Every second has a direction.</h2>
+          <p>Intelligent traffic response for faster emergency mobility. Built for cities. Designed around every second.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="mailto:demo@emergencyflow.example">Request a Demo</a>
+            <a class="button secondary" href="#technology">Explore the Technology</a>
+          </div>
+        </div>
+
+        <aside class="hud hud-left" aria-label="Live response status">
+          <span>Traffic Status</span>
+          <strong id="trafficStatus">Heavy Congestion</strong>
+          <small id="etaStatus">ETA +03:42</small>
+        </aside>
+
+        <aside class="hud hud-right" aria-label="Ambulance route status">
+          <span id="systemLabel">Ambulance Status</span>
+          <strong id="systemStatus">Blocked</strong>
+          <small id="clearanceStatus">Clearance Required</small>
+        </aside>
+
+        <aside class="metrics" aria-label="Concept metrics">
+          <div>
+            <strong id="timeMetric">03:18</strong>
+            <span>Time Saved</span>
+          </div>
+          <div>
+            <strong>01</strong>
+            <span>Ambulance</span>
+          </div>
+          <div>
+            <strong id="routeMetric">01</strong>
+            <span>Clear Route</span>
+          </div>
+        </aside>
+      </section>
+
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
