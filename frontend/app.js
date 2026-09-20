@@ -4,6 +4,10 @@ const API_BASE = window.location.hostname === "127.0.0.1" || window.location.hos
   : "/api";
 let currentMode = "ai";
 
+const FALLBACK_COMPARE = { fixed: { wait_time: 33.13 }, ai: { wait_time: 28.61 }, improvement_percent: 13.64 };
+const FALLBACK_WAVE = { junctions: [{ offset_seconds: 0 }, { offset_seconds: 32 }, { offset_seconds: 64 }] };
+const FALLBACK_SAVINGS = { fuel_saved_liters: 11.76, co2_saved_kg: 27.17 };
+
 function modulePanel() {
   if (document.getElementById("liveModules")) return;
   const panel = document.createElement("section");
@@ -45,7 +49,15 @@ async function refreshModuleData() {
   } catch (error) {
     console.error("Traffic comparison refresh failed", error);
     const button = document.getElementById("aiMode"); if (button) button.textContent = "Backend offline";
-    const comparison = document.getElementById("comparison"); if (comparison) comparison.textContent = "Start Flask on port 5000";
+    const selected = FALLBACK_COMPARE[currentMode];
+    const comparison = document.getElementById("comparison");
+    if (button) button.textContent = currentMode === "ai" ? "AI ON" : "FIXED ON";
+    if (comparison) comparison.textContent = `${currentMode === "ai" ? "AI" : "Fixed"} wait ${selected.wait_time}s · AI ${FALLBACK_COMPARE.improvement_percent}% faster · demo data`;
+    const savings = document.getElementById("savings");
+    if (savings) savings.textContent = `Fuel ${FALLBACK_SAVINGS.fuel_saved_liters} L · CO2 ${FALLBACK_SAVINGS.co2_saved_kg} kg · demo data`;
+    const wave = document.getElementById("waveState");
+    if (wave) wave.textContent = `Green wave: 3 junctions · offsets ${FALLBACK_WAVE.junctions.map((item) => `${item.offset_seconds}s`).join(" -> ")} · demo data`;
+    document.querySelectorAll(".module-card").forEach((card) => { const tag = card.querySelector(".tag"); if (tag) tag.textContent = `${currentMode.toUpperCase()} · demo mode`; });
   }
 }
 
