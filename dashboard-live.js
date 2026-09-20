@@ -15,6 +15,7 @@
   const corridorLayer = window.trafficMap && L.layerGroup().addTo(window.trafficMap);
   const corridorLines = [];
   const signalMarkers = [];
+  let signalPhase = 0;
   const corridors = [
     {id:'c1',name:'Ring Road Southern Arc',density:85,path:[[28.5918,77.1616],[28.5835,77.17],[28.5685,77.206],[28.5672,77.21],[28.5695,77.2435],[28.571,77.258]]},
     {id:'c2',name:'Outer Ring Road North Arc',density:78,path:[[28.7369,77.161],[28.7065,77.181],[28.685,77.21],[28.6665,77.23]]},
@@ -33,7 +34,7 @@
   const signalPoints = [[28.6328,77.2197],[28.5918,77.1616],[28.7369,77.161],[28.6129,77.2295],[28.5697,77.326],[28.495,77.089]];
   const signalNames = ['Connaught Place','Dhaula Kuan','Mukarba Chowk','India Gate','Noida Sector 18','Cyber Hub'];
   if (window.trafficMap) signalPoints.forEach((point,index) => { const marker=L.marker(point,{icon:L.divIcon({className:'traffic-light-marker',html:'<span class="traffic-light-body"><i></i><i></i><i></i></span>',iconSize:[22,42],iconAnchor:[11,21]})}).bindTooltip(signalNames[index],{direction:'right',offset:[7,0]}).addTo(window.trafficMap); signalMarkers.push(marker); });
-  const refreshSignals = () => { signalMarkers.forEach((marker,index) => { const item=traffic[index%Math.max(1,traffic.length)]||fallback[0]; const state=item.level==='SEVERE'||item.level==='HIGH'?'red':item.level==='MODERATE'?'amber':'green'; marker.getElement()?.setAttribute('data-state',state); }); };
+  const refreshSignals = () => { signalMarkers.forEach((marker,index) => { const item=traffic[index%Math.max(1,traffic.length)]||fallback[0]; const pressure=item.level==='SEVERE'?0:item.level==='HIGH'?1:item.level==='MODERATE'?2:3; const phases=pressure===0?['red','red','amber','red','red','green']:pressure===1?['red','amber','red','green','green']:['green','green','amber','red']; const state=phases[(signalPhase+index)%phases.length]; const element=marker.getElement();element?.setAttribute('data-state',state);element?.setAttribute('aria-label',`${signalNames[index]} signal ${state}`);marker.setTooltipContent(`${signalNames[index]} · ${state.toUpperCase()} phase`); }); };
   const levelClass = (item) => item.level.toLowerCase();
   const drawNetwork = () => {
     overlay.replaceChildren(); paths=[];
@@ -54,5 +55,5 @@
   const ask=async()=>{const text=input.value.trim();if(!text||send.disabled)return;input.value='';send.disabled=true;addMessage('You',text);const typing=addMessage('Tarrid AI','Reviewing live junction context…',true);try{const response=await fetch(`${API}/ai/traffic`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})});if(!response.ok)throw Error('assistant unavailable');const data=await response.json();typing.remove();addMessage('Tarrid AI',data.response||localAnswer(text));}catch{typing.remove();addMessage('Tarrid AI',localAnswer(text));}finally{send.disabled=false;}};
   send.onclick=ask;input.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask();}};document.querySelectorAll('.suggestion').forEach(button=>{button.onclick=()=>{input.value=button.textContent;ask();};});
   document.querySelectorAll('.module-card').forEach((card,index)=>card.addEventListener('click',()=>{const item=traffic[index%traffic.length];if(window.trafficMap&&item?.lat)window.trafficMap.setView([item.lat,item.lng],13,{animate:true});}));
-  fetchTraffic();setInterval(fetchTraffic,5000);
+  fetchTraffic();setInterval(fetchTraffic,5000);setInterval(()=>{signalPhase=(signalPhase+1)%12;refreshSignals();},2200);
 })();
