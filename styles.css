@@ -340,6 +340,15 @@ canvas,
   box-shadow: 0 0 18px var(--green);
 }
 
+@media (max-width: 1000px) {
+  .signal-chip { right: 18px; bottom: 108px; max-width: min(190px, calc(100vw - 36px)); }
+  .signal-chip strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+
+@media (max-width: 480px) {
+  .signal-chip { right: 12px; bottom: 94px; min-height: 36px; padding: 0 11px; font-size: 9px; }
+}
+
 .story {
   position: relative;
   z-index: 8;

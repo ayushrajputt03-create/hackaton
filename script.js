@@ -225,6 +225,7 @@ function requestScrollUpdate() {
 }
 
 function initRoute() {
+  if (!routeLine || !routeGlow || !routeSvg || !ambulanceMarker) return;
   routeLength = routeLine.getTotalLength();
   routeLine.style.setProperty("--route-length", routeLength);
   routeGlow.style.setProperty("--route-length", routeLength);
@@ -270,9 +271,13 @@ function initCommandCenter() {
 window.matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", (event) => {
   motionEnabled = !event.matches;
 });
+let resizeTimer;
 window.addEventListener("resize", () => {
-  resizeCanvas();
-  updateScrollState();
+  window.clearTimeout(resizeTimer);
+  resizeTimer = window.setTimeout(() => {
+    resizeCanvas();
+    updateScrollState();
+  }, 80);
 });
 window.addEventListener("scroll", requestScrollUpdate, { passive: true });
 
